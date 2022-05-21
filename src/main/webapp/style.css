@@ -1,0 +1,85 @@
+@charset "ISO-8859-1";
+
+/* Navigation bar */
+.navbar {
+	color:#fff!important;
+	background-color:#000!important;
+  	overflow: hidden; /* Hide overflow */
+}
+
+/* Navigation bar links */
+.navbar a {
+  	display: block; /* Change the display to block, for responsive reasons (see below) */
+  	color: white; /* White text color */
+}
+
+/* Navigation bar images */
+.navbar img {
+    max-width: 6%;
+    max-height: 6%;
+}
+
+.box {
+   	display: flex;
+   	align-items:center;
+}
+
+.btn-group {
+	border-right: 5px solid;
+	height:100%;
+}
+
+.btn-group input {
+  background-color: #04AA6D; /* Green background */
+  border: 1px solid green; /* Green border */
+  color: white; /* White text */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  width: 100%;
+  display: block; /* Make the buttons appear below each other */
+}
+
+.single-row-input {
+  border: 1px solid green; /* Green border */
+  padding: 10px 24px; /* Some padding */
+  cursor: pointer; /* Pointer/hand icon */
+  width: 100%;
+  display: block; /* Make the buttons appear below each other */
+}
+
+.textarea-input {
+	resize: none;
+  	border: 1px solid green; /* Green border */
+  	padding: 10px 24px; /* Some padding */
+  	cursor: pointer; /* Pointer/hand icon */
+  	width: 100%;
+  	height: 100%;
+  	display: block; /* Make the buttons appear below each other */
+}
+
+.btn-group button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+}
+
+/* Add a background color on hover */
+.btn-group button:hover {
+  background-color: #3e8e41;
+}
+
+.grid-container {
+  display: grid;
+  grid-template-columns: 10% 90%;
+  grid-template-rows: 100%;
+}
+
+.form-resize {
+	width: 95%;
+	height: 100%;
+}
+
+
+
+ 
+
+
+
