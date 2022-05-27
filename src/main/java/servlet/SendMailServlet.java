@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Date;
@@ -64,15 +65,19 @@ public class SendMailServlet extends HttpServlet {
 		String body = request.getParameter("body").replace("'", "''");;
 		String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
 		
-		try (Statement st = conn.createStatement()) {
-			st.execute(
-				"INSERT INTO mail ( sender, receiver, subject, body, [time] ) "
-				+ "VALUES ( '" + sender + "', '" + receiver + "', '" + subject + "', '" + body + "', '" + timestamp + "' )"
-			);
+		String query = "INSERT INTO mail ( sender, receiver, subject, body, [time] ) VALUES (?, ?, ?, ?, ?)";
+		try (PreparedStatement result = conn.prepareStatement(query)){
+			result.setString(1, sender);
+			result.setString(2, receiver);
+			result.setString(3, subject);
+			result.setString(4, body);
+			result.setString(5, timestamp);
+			result.executeUpdate();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
+		
 		
 		request.setAttribute("email", sender);
 		request.getRequestDispatcher("home.jsp").forward(request, response);

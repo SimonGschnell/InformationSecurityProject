@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -73,8 +74,10 @@ public class NavigationServlet extends HttpServlet {
 		request.getRequestDispatcher("home.jsp").forward(request, response);
 	}
 
-	private String getHtmlForInbox(String email, String pwd, String s ) {
-		try (Statement st = conn.createStatement()) {
+	private String getHtmlForInbox(String email, String pwd, String search_output ) {
+		String query="SELECT * FROM mail WHERE receiver =? AND subject LIKE ? ORDER BY [time] DESC";
+		try(PreparedStatement result = conn.prepareStatement(query)){
+			
 			String search = "<div ><form id=\"searchInbox\"  action=\"NavigationServlet\" method=\"post\">\r\n"
 					+"<input type=\"hidden\" name=\"email\" value=\""+email+"\">"
 			+"<input type=\"hidden\" name=\"password\" value=\""+pwd+"\">"
@@ -83,39 +86,41 @@ public class NavigationServlet extends HttpServlet {
 					+ "		<input type=\"submit\" name=\"inbox\" value=\"search\">\r\n"
 					+ "	</form>";
 			
-			if(s !=null)
-				search+= "<br><p style=\"font-weight:bold; text-decoration:underline; font-style:italic;\">you searched for: <span style=\"color:red;\">"+s+"</span></p>";
+
+			if(search_output !=null)
+				search+= "<br><p style=\"font-weight:bold; text-decoration:underline; font-style:italic;\">you searched for: <span style=\"color:red;\">"+search_output+"</span></p>";
 			
-			if(s == null) 
-				s="";
+			if(search_output == null) 
+				search_output="";
 			
-			ResultSet sqlRes = st.executeQuery(
-					"SELECT * FROM mail "
-					+ "WHERE receiver='" + email + "' AND subject LIKE'%"+ s+"%' " 
-					+ "ORDER BY [time] DESC"
-				);
+			
+			result.setString(1, email);
+			result.setString(2, "%"+search_output+"%");
+			ResultSet res = result.executeQuery();
+			
+			StringBuilder output = new StringBuilder();
+			output.append("<div>\r\n");
+			
+			while (res.next()) {
+				output.append("<br><div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
+				output.append("FROM:&emsp;" + res.getString(1) + "&emsp;&emsp;AT:&emsp;" + res.getString(5));
+				output.append("</span>");
+				output.append("<br><b>" + res.getString(3) + "</b>\r\n");
+				output.append("<br>" + res.getString(4));
+				output.append("</div></div>\r\n");
 				
-				StringBuilder output = new StringBuilder();
-				output.append("<div>\r\n");
-				
-				while (sqlRes.next()) {
-					output.append("<br><div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-					output.append("FROM:&emsp;" + sqlRes.getString(1) + "&emsp;&emsp;AT:&emsp;" + sqlRes.getString(5));
-					output.append("</span>");
-					output.append("<br><b>" + sqlRes.getString(3) + "</b>\r\n");
-					output.append("<br>" + sqlRes.getString(4));
-					output.append("</div></div>\r\n");
-					
-					output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
-				}
-				
-				output.append("</div>");
+				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
+			}
+			
+			output.append("</div>");
 			return search +output.toString();
 			
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return "ERROR IN FETCHING INBOX MAILS!";
 		}
+		
+			
 	}
 	
 	
@@ -135,22 +140,20 @@ public class NavigationServlet extends HttpServlet {
 	
 	
 	private String getHtmlForSent(String email) {
-		try (Statement st = conn.createStatement()) {
-			ResultSet sqlRes = st.executeQuery(
-				"SELECT * FROM mail "
-				+ "WHERE sender='" + email + "'"
-				+ "ORDER BY [time] DESC"
-			);
+		String query = "SELECT * FROM mail WHERE sender = ? ORDER BY [time] DESC";
+		try(PreparedStatement result = conn.prepareStatement(query)){
+			result.setString(1, email);
+			ResultSet res = result.executeQuery();
 			
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
 			
-			while (sqlRes.next()) {
+			while (res.next()) {
 				output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				output.append("TO:&emsp;" + sqlRes.getString(2) + "&emsp;&emsp;AT:&emsp;" + sqlRes.getString(5));
+				output.append("TO:&emsp;" + res.getString(2) + "&emsp;&emsp;AT:&emsp;" + res.getString(5));
 				output.append("</span>");
-				output.append("<br><b>" + sqlRes.getString(3) + "</b>\r\n");
-				output.append("<br>" + sqlRes.getString(4));
+				output.append("<br><b>" + res.getString(3) + "</b>\r\n");
+				output.append("<br>" + res.getString(4));
 				output.append("</div>\r\n");
 				
 				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
@@ -159,10 +162,10 @@ public class NavigationServlet extends HttpServlet {
 			output.append("</div>");
 			
 			return output.toString();
-			
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return "ERROR IN FETCHING INBOX MAILS!";
 		}
+		
 	}
 }

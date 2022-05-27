@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -61,22 +62,23 @@ public class RegisterServlet extends HttpServlet {
 		String email = request.getParameter("email").replace("'", "''");;
 		String pwd = request.getParameter("password").replace("'", "''");;
 		
-		try (Statement st = conn.createStatement()) {
-			ResultSet sqlRes = st.executeQuery(
-				"SELECT * "
-				+ "FROM [user] "
-				+ "WHERE email='" + email + "'"
-			);
+		String alreadyRegisteredQuery = "SELECT * FROM [user] WHERE email = ?";
+		String registerQuery = "INSERT INTO [user] ( name, surname, email, password ) VALUES (?,?,?,?)";
+		try (PreparedStatement result = conn.prepareStatement(alreadyRegisteredQuery)) {
+			result.setString(1, email);
+			ResultSet sqlRes = result.executeQuery();
 			
 			if (sqlRes.next()) {
 				System.out.println("Email already registered!");
 				request.getRequestDispatcher("register.html").forward(request, response);
 				
 			} else {
-				st.execute(
-					"INSERT INTO [user] ( name, surname, email, password ) "
-					+ "VALUES ( '" + name + "', '" + surname + "', '" + email + "', '" + pwd + "' )"
-				);
+				PreparedStatement res = conn.prepareStatement(registerQuery);
+				res.setString(1, name);
+				res.setString(2, surname);
+				res.setString(3, email);
+				res.setString(4, pwd);
+				res.executeUpdate();
 				
 				request.setAttribute("email", email);
 				request.setAttribute("password", pwd);

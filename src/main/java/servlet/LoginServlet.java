@@ -4,6 +4,7 @@ import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -57,14 +58,11 @@ public class LoginServlet extends HttpServlet {
 		
 		String email = request.getParameter("email");
 		String pwd = request.getParameter("password");
-		
-		try (Statement st = conn.createStatement()) {
-			ResultSet sqlRes = st.executeQuery(
-				"SELECT * "
-				+ "FROM [user] "
-				+ "WHERE email='" + email + "' "
-					+ "AND password='" + pwd + "'"
-			);
+		String query = "SELECT * FROM [user] WHERE email = ? AND password= ?";
+		try (PreparedStatement result = conn.prepareStatement(query)){
+			result.setString(1, email);
+			result.setString(2, pwd);
+			ResultSet sqlRes = result.executeQuery();
 			
 			if (sqlRes.next()) {
 				request.setAttribute("email", sqlRes.getString(3));
@@ -83,6 +81,9 @@ public class LoginServlet extends HttpServlet {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			request.getRequestDispatcher("login.html").forward(request, response);
+			
 		}
+		
+		
 	}
 }
