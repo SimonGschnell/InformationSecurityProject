@@ -54,16 +54,18 @@ public class SendMailServlet extends HttpServlet {
 		}
     }
 
-    
+    private String equalizer(String stringToCheck) {
+    	return stringToCheck.replaceAll("\\<.*?\\>", "");
+    }
    
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		
-		String sender = request.getParameter("email").replace("'", "''");;
-		String receiver = request.getParameter("receiver").replace("'", "''");;
-		String subject = request.getParameter("subject").replace("'", "''");;
-		String body = request.getParameter("body").replace("'", "''");;
-		String timestamp = new Date(System.currentTimeMillis()).toInstant().toString();
+		String sender = equalizer(request.getParameter("email").replace("'", "''"));;
+		String receiver = equalizer(request.getParameter("receiver").replace("'", "''"));;
+		String subject = equalizer(request.getParameter("subject").replace("'", "''"));;
+		String body = equalizer(request.getParameter("body").replace("'", "''"));;
+		String timestamp = equalizer(new Date(System.currentTimeMillis()).toInstant().toString());
 		
 		String query = "INSERT INTO mail ( sender, receiver, subject, body, [time] ) VALUES (?, ?, ?, ?, ?)";
 		try (PreparedStatement result = conn.prepareStatement(query)){

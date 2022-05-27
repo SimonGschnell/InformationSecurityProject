@@ -55,12 +55,20 @@ public class NavigationServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+    
+    private String equalizer(String stringToCheck) {
+    	return stringToCheck.replaceAll("\\<.*?\\>", "");
+    }
+    
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		
-		String email = request.getParameter("email").replace("'", "''");;
-		String pwd = request.getParameter("password").replace("'", "''");;
-		String search = request.getParameter("search");;
+		String email = equalizer(request.getParameter("email").replace("'", "''"));;
+		String pwd = equalizer(request.getParameter("password").replace("'", "''"));;
+		String search="";
+		if(request.getParameter("search")!=null){
+			 search= equalizer(request.getParameter("search"));
+		};;
 				
 		if (request.getParameter("newMail") != null)
 			request.setAttribute("content", getHtmlForNewMail(email, pwd));
@@ -103,10 +111,10 @@ public class NavigationServlet extends HttpServlet {
 			
 			while (res.next()) {
 				output.append("<br><div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				output.append("FROM:&emsp;" + res.getString(1) + "&emsp;&emsp;AT:&emsp;" + res.getString(5));
+				output.append("FROM:&emsp;" + equalizer(res.getString(1)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(5)));
 				output.append("</span>");
-				output.append("<br><b>" + res.getString(3) + "</b>\r\n");
-				output.append("<br>" + res.getString(4));
+				output.append("<br><b>" + equalizer(res.getString(3)) + "</b>\r\n");
+				output.append("<br>" + equalizer(res.getString(4)));
 				output.append("</div></div>\r\n");
 				
 				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
@@ -150,10 +158,10 @@ public class NavigationServlet extends HttpServlet {
 			
 			while (res.next()) {
 				output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				output.append("TO:&emsp;" + res.getString(2) + "&emsp;&emsp;AT:&emsp;" + res.getString(5));
+				output.append("TO:&emsp;" + equalizer(res.getString(2)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(5)));
 				output.append("</span>");
-				output.append("<br><b>" + res.getString(3) + "</b>\r\n");
-				output.append("<br>" + res.getString(4));
+				output.append("<br><b>" + equalizer(res.getString(3)) + "</b>\r\n");
+				output.append("<br>" + equalizer(res.getString(4)));
 				output.append("</div>\r\n");
 				
 				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");

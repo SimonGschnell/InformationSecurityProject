@@ -52,6 +52,10 @@ public class LoginServlet extends HttpServlet {
 			e.printStackTrace();
 		}
     }
+    
+    private String equalizer (String stringToCheck) {
+    	return stringToCheck.replaceAll("\\<.*?\\>", "");
+    }
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
@@ -65,8 +69,8 @@ public class LoginServlet extends HttpServlet {
 			ResultSet sqlRes = result.executeQuery();
 			
 			if (sqlRes.next()) {
-				request.setAttribute("email", sqlRes.getString(3));
-				request.setAttribute("password", sqlRes.getString(4));
+				request.setAttribute("email", equalizer(sqlRes.getString(3)));
+				request.setAttribute("password", equalizer(sqlRes.getString(4)));
 				
 				System.out.println("Login succeeded!");
 				request.setAttribute("content", "");

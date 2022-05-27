@@ -53,14 +53,18 @@ public class RegisterServlet extends HttpServlet {
 		}
     }
 
+    private String equalizer(String stringToCheck) {
+    	return stringToCheck.replaceAll("\\<.*?\\>", "");
+    }
+    
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		
 		// The replacement escapes apostrophe special character in order to store it in SQL
-		String name = request.getParameter("name").replace("'", "''");
-		String surname = request.getParameter("surname").replace("'", "''");;
-		String email = request.getParameter("email").replace("'", "''");;
-		String pwd = request.getParameter("password").replace("'", "''");;
+		String name = equalizer(request.getParameter("name").replace("'", "''"));
+		String surname = equalizer(request.getParameter("surname").replace("'", "''"));;
+		String email = equalizer(request.getParameter("email").replace("'", "''"));;
+		String pwd = equalizer(request.getParameter("password").replace("'", "''"));;
 		
 		String alreadyRegisteredQuery = "SELECT * FROM [user] WHERE email = ?";
 		String registerQuery = "INSERT INTO [user] ( name, surname, email, password ) VALUES (?,?,?,?)";
