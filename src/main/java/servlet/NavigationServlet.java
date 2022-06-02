@@ -111,7 +111,7 @@ public class NavigationServlet extends HttpServlet {
 			
 			while (res.next()) {
 				output.append("<br><div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				output.append("FROM:&emsp;" + equalizer(res.getString(1)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(5)));
+				output.append("FROM:&emsp;" + equalizer(res.getString(1)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(6)));
 				output.append("</span>");
 				output.append("<br><b>" + equalizer(res.getString(3)) + "</b>\r\n");
 				output.append("<br>" + equalizer(res.getString(4)));
@@ -131,18 +131,34 @@ public class NavigationServlet extends HttpServlet {
 			
 	}
 	
-	
-	
-	private String getHtmlForNewMail(String email, String pwd) {
-		return 
-			"<form id=\"submitForm\" class=\"form-resize\" action=\"SendMailServlet\" method=\"post\">\r\n"
+	/*		"<div class = \"flex-container\">"
+				+"<form id=\"submitForm\" class=\"form-resize\" action=\"SendMailServlet\" method=\"post\">\r\n"
 			+ "		<input type=\"hidden\" name=\"email\" value=\""+email+"\">\r\n"
 			+ "		<input type=\"hidden\" name=\"password\" value=\""+pwd+"\">\r\n"
 			+ "		<input class=\"single-row-input\" type=\"email\" name=\"receiver\" placeholder=\"Receiver\" required>\r\n"
 			+ "		<input class=\"single-row-input\" type=\"text\"  name=\"subject\" placeholder=\"Subject\" required>\r\n"
 			+ "		<textarea class=\"textarea-input\" name=\"body\" placeholder=\"Body\" wrap=\"hard\" required></textarea>\r\n"
 			+ "		<input type=\"submit\" name=\"sent\" value=\"Send\">\r\n"
-			+ "	</form>";
+			+ "	</form>\r\n"
+			+ "<input type=\"checkbox\" id=\"accept\" name=\"Digital_Signature\" value=\"yes\"> Digital Signature"
+			+" </div>";
+	 */
+	
+	private String getHtmlForNewMail(String email, String pwd) {
+		return 
+			"<div class = \"flex-container\">"
+				+	"<form id=\"submitForm\" class=\"form-resize\" action=\"SendMailServlet\" method=\"post\">\r\n"
+			+ "		<input type=\"hidden\" name=\"email\" value=\""+email+"\">\r\n"
+			+ "		<input type=\"hidden\" name=\"password\" value=\""+pwd+"\">\r\n"
+			+ "		<input class=\"single-row-input\" type=\"email\" name=\"receiver\" placeholder=\"Receiver\" required>\r\n"
+			+ "		<input class=\"single-row-input\" type=\"text\"  name=\"subject\" placeholder=\"Subject\" required>\r\n"
+			+ "		<textarea class=\"textarea-input\" name=\"body\" placeholder=\"Body\" wrap=\"hard\" required></textarea>\r\n"
+			+ "		<input type=\"submit\" name=\"sent\" value=\"Send\">\r\n"
+			+ "	</form>\r\n"
+			+ "<div>"
+			+ "<input class = \" signature-button\" type=\"checkbox\" id=\"Digital\" name=\"Digital\" value=\"true\" > Digital Signature"
+			+ "</div>"
+			+" </div>";
 	}
 	
 	
@@ -158,7 +174,7 @@ public class NavigationServlet extends HttpServlet {
 			
 			while (res.next()) {
 				output.append("<div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				output.append("TO:&emsp;" + equalizer(res.getString(2)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(5)));
+				output.append("TO:&emsp;" + equalizer(res.getString(2)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(6)));
 				output.append("</span>");
 				output.append("<br><b>" + equalizer(res.getString(3)) + "</b>\r\n");
 				output.append("<br>" + equalizer(res.getString(4)));
