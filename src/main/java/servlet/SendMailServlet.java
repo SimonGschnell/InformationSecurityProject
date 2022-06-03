@@ -2,12 +2,16 @@ package servlet;
 
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import jakarta.servlet.ServletException;
@@ -66,18 +70,43 @@ public class SendMailServlet extends HttpServlet {
 		String subject = equalizer(request.getParameter("subject").replace("'", "''"));;
 		String body = equalizer(request.getParameter("body").replace("'", "''"));;
 		String timestamp = equalizer(new Date(System.currentTimeMillis()).toInstant().toString());
-		
-		String query = "INSERT INTO mail ( sender, receiver, subject, body, [time] ) VALUES (?, ?, ?, ?, ?)";
+		Integer e=0;
+		Integer n=0;
+		String encriptedBody = "";
+		String publicKeyQuery = "SELECT e,n FROM [user]  WHERE email = ?";
+		try (PreparedStatement result = conn.prepareStatement(publicKeyQuery)){
+			result.setString(1, receiver);
+			ResultSet set = result.executeQuery();
+			while (set.next()) {
+				e = Integer.parseInt(set.getString(1));
+				n = Integer.parseInt(set.getString(2));
+				
+				int[] list  = DigitalSignature.encrypt(body, e, n);
+				
+				for(int i : list) {
+					
+						encriptedBody+=i+",";
+					
+				}
+				encriptedBody.substring(0, encriptedBody.length());
+				
+				
+			}
+		}catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+		String query = "INSERT INTO mail ( sender, receiver, subject, body, digitalSignature , [time] ) VALUES (?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement result = conn.prepareStatement(query)){
 			result.setString(1, sender);
 			result.setString(2, receiver);
 			result.setString(3, subject);
-			result.setString(4, body);
-			result.setString(5, timestamp);
+			result.setString(4, encriptedBody);
+			result.setString(5, "test signature");
+			result.setString(6, timestamp);
 			result.executeUpdate();
 			
-		} catch (SQLException e) {
-			e.printStackTrace();
+		} catch (SQLException e2) {
+			e2.printStackTrace();
 		}
 		
 		

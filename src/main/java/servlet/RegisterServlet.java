@@ -1,13 +1,16 @@
 package servlet;
 
 import jakarta.servlet.http.HttpServlet;
+
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+import java.util.HashMap;
 import java.util.Properties;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -84,6 +87,22 @@ public class RegisterServlet extends HttpServlet {
         return bytes;
     }
     
+    private void savePrivateKey(Integer key, Integer n, String user) throws IOException {
+    	
+    	
+        File catalinaBase = new File(System.getProperty("catalina.home")).getAbsoluteFile();
+        new File(System.getProperty("catalina.home")+"/privateKeys").mkdirs();
+       
+    	String webSettingFileName = user+".txt"; 
+    	File file = new File(catalinaBase,"privateKeys/"+webSettingFileName);
+    	
+    	FileWriter fw = new FileWriter(file);
+    	fw.write(key+"\n"+n);
+    	
+    	fw.close();
+    	
+    }
+    
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 		
@@ -104,9 +123,15 @@ public class RegisterServlet extends HttpServlet {
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
-		
+		HashMap<String, Integer> generatedKeys = new HashMap<>();
+		try {
+			generatedKeys= DigitalSignature.generateKeys();
+		} catch (Exception e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
 		String alreadyRegisteredQuery = "SELECT * FROM [user] WHERE email = ?";
-		String registerQuery = "INSERT INTO [user] ( name, surname, email, password, salt) VALUES (?,?,?,?,?)";
+		String registerQuery = "INSERT INTO [user] ( name, surname, email, password, salt, e, n) VALUES (?,?,?,?,?,?,?)";
 		try (PreparedStatement result = conn.prepareStatement(alreadyRegisteredQuery)) {
 			result.setString(1, email);
 			ResultSet sqlRes = result.executeQuery();
@@ -122,12 +147,17 @@ public class RegisterServlet extends HttpServlet {
 				res.setString(3, email);
 				res.setString(4, pwd_hash);
 				res.setString(5, salt);
+				res.setInt(6, generatedKeys.get("public"));
+				res.setInt(7, generatedKeys.get("n"));
 				res.executeUpdate();
 				
 				request.setAttribute("email", email);
 				request.setAttribute("password", pwd_hash);
 				
 				System.out.println("Registration succeeded!");
+				
+				savePrivateKey(generatedKeys.get("private"),generatedKeys.get("n"),email);
+				
 				request.getRequestDispatcher("home.jsp").forward(request, response);
 			}
 			
