@@ -1,13 +1,22 @@
 package servlet;
 
 import jakarta.servlet.http.HttpServlet;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigInteger;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Properties;
 
 import jakarta.servlet.ServletException;
@@ -81,6 +90,33 @@ public class NavigationServlet extends HttpServlet {
 		request.setAttribute("email", email);
 		request.getRequestDispatcher("home.jsp").forward(request, response);
 	}
+	
+	private HashMap<String,Integer> readPrivateKey(String email) {
+		File catalinaBase = new File(System.getProperty("catalina.home")).getAbsoluteFile();
+        
+       
+    	
+    	File file = new File(catalinaBase,"privateKeys/"+email+".txt");
+    	Integer d = 0;
+    	Integer n = 0;
+    	try {
+    	FileReader fr = new FileReader(file);
+    	BufferedReader br = new BufferedReader(fr);
+    	d = Integer.parseInt(br.readLine());
+    	
+    	n = Integer.parseInt(br.readLine());
+    	
+    	br.close();
+    	}catch(Exception e ) {
+    		e.printStackTrace();
+    		
+    	}
+    	HashMap<String,Integer> publicKey = new HashMap<String,Integer>();
+    	publicKey.put("private", d);
+    	publicKey.put("n", n);
+    	return publicKey;
+    	
+	}
 
 	private String getHtmlForInbox(String email, String pwd, String search_output ) {
 		String query="SELECT * FROM mail WHERE receiver =? AND subject LIKE ? ORDER BY [time] DESC";
@@ -109,12 +145,24 @@ public class NavigationServlet extends HttpServlet {
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
 			
+			
+			HashMap<String,Integer> publicKey = readPrivateKey(email);
 			while (res.next()) {
+				String[] cipherText = res.getString(4).split(",");
+				int[] cipher = new int[cipherText.length];
+				for(int i =0; i<cipherText.length; i++) {
+					cipher[i] = Integer.parseInt(cipherText[i]);
+				}
+				
+				
+				String body = DigitalSignature.decrypt(cipher
+						,publicKey.get("private") 
+						,publicKey.get("n"));
 				output.append("<br><div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
 				output.append("FROM:&emsp;" + equalizer(res.getString(1)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(6)));
 				output.append("</span>");
 				output.append("<br><b>" + equalizer(res.getString(3)) + "</b>\r\n");
-				output.append("<br>" + equalizer(res.getString(4)));
+				output.append("<br>" + equalizer(body));
 				output.append("</div></div>\r\n");
 				
 				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");

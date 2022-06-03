@@ -9,9 +9,12 @@ import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 import java.util.Properties;
 
 import jakarta.servlet.ServletException;
@@ -79,7 +82,7 @@ public class SendMailServlet extends HttpServlet {
    
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
-				//new String(RegisterServlet.generateSalt(), StandardCharsets.UTF_8);
+				
 		String hashed_body = "";
 		String sender = equalizer(request.getParameter("email").replace("'", "''"));;
 		String receiver = equalizer(request.getParameter("receiver").replace("'", "''"));;
@@ -89,6 +92,7 @@ public class SendMailServlet extends HttpServlet {
 		//String checkBox = equalizer(request.getParameter("Digital").replace("'", "''"));;
 		//System.out.println(checkBox);
 		String timestamp = equalizer(new Date(System.currentTimeMillis()).toInstant().toString());
+
 		
 		try {
 			hashed_body = simpleHasher(body);
@@ -100,18 +104,45 @@ public class SendMailServlet extends HttpServlet {
 		
 		
 		String query = "INSERT INTO mail ( sender, receiver, subject, body, digital_signature, [time] ) VALUES (?, ?, ?, ?, ?, ?)";
+
+		Integer e=0;
+		Integer n=0;
+		String encriptedBody = "";
+		String publicKeyQuery = "SELECT e,n FROM [user]  WHERE email = ?";
+		try (PreparedStatement result = conn.prepareStatement(publicKeyQuery)){
+			result.setString(1, receiver);
+			ResultSet set = result.executeQuery();
+			while (set.next()) {
+				e = Integer.parseInt(set.getString(1));
+				n = Integer.parseInt(set.getString(2));
+				
+				int[] list  = DigitalSignature.encrypt(body, e, n);
+				
+				for(int i : list) {
+					
+						encriptedBody+=i+",";
+					
+				}
+				encriptedBody.substring(0, encriptedBody.length());
+				
+				
+			}
+		}catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+
 		try (PreparedStatement result = conn.prepareStatement(query)){
 			result.setString(1, sender);
 			result.setString(2, receiver);
 			result.setString(3, subject);
-			result.setString(4, body);
-			result.setString(5, hashed_body);
-			//result.setString(6, salt);
+			result.setString(4, encriptedBody);
+			result.setString(5, "test signature");
+
 			result.setString(6, timestamp);
 			result.executeUpdate();
 			
-		} catch (SQLException e) {
-			e.printStackTrace();
+		} catch (SQLException e2) {
+			e2.printStackTrace();
 		}
 		
 		
