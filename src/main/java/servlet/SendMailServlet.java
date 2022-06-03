@@ -2,7 +2,10 @@ package servlet;
 
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
-import java.math.BigInteger;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -61,15 +64,47 @@ public class SendMailServlet extends HttpServlet {
     private String equalizer(String stringToCheck) {
     	return stringToCheck.replaceAll("\\<.*?\\>", "");
     }
+    
+
+    private String simpleHasher(String inputString) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+		MessageDigest md = MessageDigest.getInstance("SHA-256");
+		byte[] input = inputString.getBytes();
+		byte[] bytes = md.digest(input);
+			
+		StringBuilder sb = new StringBuilder();
+		for(int i=0; i< bytes.length ;i++)
+		{
+			sb.append(String.format("%02x", bytes[i])); //transforms Hexadecimal to String
+		}
+		
+		return sb.toString();
+	}
    
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
-		
+				
+		String hashed_body = "";
 		String sender = equalizer(request.getParameter("email").replace("'", "''"));;
 		String receiver = equalizer(request.getParameter("receiver").replace("'", "''"));;
 		String subject = equalizer(request.getParameter("subject").replace("'", "''"));;
 		String body = equalizer(request.getParameter("body").replace("'", "''"));;
+		// Ask how to do this stuff of getting parameter....
+		//String checkBox = equalizer(request.getParameter("Digital").replace("'", "''"));;
+		//System.out.println(checkBox);
 		String timestamp = equalizer(new Date(System.currentTimeMillis()).toInstant().toString());
+
+		
+		try {
+			hashed_body = simpleHasher(body);
+		} catch (NoSuchAlgorithmException e) {
+			e.printStackTrace();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		}
+		
+		
+		String query = "INSERT INTO mail ( sender, receiver, subject, body, digital_signature, [time] ) VALUES (?, ?, ?, ?, ?, ?)";
+
 		Integer e=0;
 		Integer n=0;
 		String encriptedBody = "";
@@ -95,13 +130,14 @@ public class SendMailServlet extends HttpServlet {
 		}catch (SQLException e1) {
 			e1.printStackTrace();
 		}
-		String query = "INSERT INTO mail ( sender, receiver, subject, body, digitalSignature , [time] ) VALUES (?, ?, ?, ?, ?, ?)";
+
 		try (PreparedStatement result = conn.prepareStatement(query)){
 			result.setString(1, sender);
 			result.setString(2, receiver);
 			result.setString(3, subject);
 			result.setString(4, encriptedBody);
 			result.setString(5, "test signature");
+
 			result.setString(6, timestamp);
 			result.executeUpdate();
 			

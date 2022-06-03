@@ -70,11 +70,23 @@
   display: grid;
   grid-template-columns: 10% 90%;
   grid-template-rows: 100%;
+  align-items: start;
 }
 
 .form-resize {
 	width: 95%;
-	height: 100%;
+	height:100%;
+}
+
+.flex-container {
+  display: flex; /* or inline-flex */
+  flex-direction: column;
+  flex-wrap: nowrap;
+}
+
+.signature-button {
+    /* display: block; */
+	/*margin-top: 125px;*/
 }
 
 
