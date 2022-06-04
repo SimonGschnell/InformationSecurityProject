@@ -14,7 +14,7 @@ CREATE TABLE mail (
 	receiver varchar(200) NOT NULL,
 	subject varchar(200) NULL,
 	body text NOT NULL,
-	digitalSignature varchar(200) NULL,
+	digitalSignature varchar(4000) NULL,
 	[time] datetime2(3) NOT NULL,
 	CONSTRAINT mail_FK FOREIGN KEY (sender) REFERENCES [user](email),
 	CONSTRAINT mail_FK_1 FOREIGN KEY (receiver) REFERENCES [user](email)
