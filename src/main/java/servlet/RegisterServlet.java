@@ -52,8 +52,6 @@ public class RegisterServlet extends HttpServlet {
 		    connectionProps.put("password", PWD);
 	
 	        conn = DriverManager.getConnection(DB_URL, connectionProps);
-		    
-		    //System.out.println("User \"" + USER + "\" connected to database.");
     	
     	} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
@@ -89,7 +87,6 @@ public class RegisterServlet extends HttpServlet {
     
     private void savePrivateKey(Integer key, Integer n, String user) throws IOException {
     	
-    	
         File catalinaBase = new File(System.getProperty("catalina.home")).getAbsoluteFile();
         new File(System.getProperty("catalina.home")+"/privateKeys").mkdirs();
        
@@ -112,7 +109,6 @@ public class RegisterServlet extends HttpServlet {
 		String email = equalizer(request.getParameter("email").replace("'", "''"));;
 		String pwd = equalizer(request.getParameter("password").replace("'", "''"));;
 		
-		//String salt = generateSalt().toString();
 		String salt = new String(generateSalt(), StandardCharsets.UTF_8);
 		String pwd_hash = "";
 		
@@ -127,7 +123,6 @@ public class RegisterServlet extends HttpServlet {
 		try {
 			generatedKeys= DigitalSignature.generateKeys();
 		} catch (Exception e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		String alreadyRegisteredQuery = "SELECT * FROM [user] WHERE email = ?";
@@ -166,5 +161,4 @@ public class RegisterServlet extends HttpServlet {
 			request.getRequestDispatcher("register.html").forward(request, response);
 		}
 	}
-
 }

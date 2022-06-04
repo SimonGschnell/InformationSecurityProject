@@ -5,17 +5,14 @@ import jakarta.servlet.http.HttpServlet;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.math.BigInteger;
+import java.io.UnsupportedEncodingException;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -52,9 +49,7 @@ public class NavigationServlet extends HttpServlet {
 		    connectionProps.put("user", USER);
 		    connectionProps.put("password", PWD);
 	
-	        conn = DriverManager.getConnection(DB_URL, connectionProps);
-		    
-		    //System.out.println("User \"" + USER + "\" connected to database.");
+	        conn = DriverManager.getConnection(DB_URL, connectionProps);		  
     	
     	} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
@@ -82,8 +77,13 @@ public class NavigationServlet extends HttpServlet {
 		if (request.getParameter("newMail") != null)
 			request.setAttribute("content", getHtmlForNewMail(email, pwd));
 		else if (request.getParameter("inbox") != null)
-			request.setAttribute("content", getHtmlForInbox(email, pwd,search));
-		
+			try {
+				request.setAttribute("content", getHtmlForInbox(email, pwd,search));
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
 		else if (request.getParameter("sent") != null)
 			request.setAttribute("content", getHtmlForSent(email));
 		
@@ -94,8 +94,6 @@ public class NavigationServlet extends HttpServlet {
 	static public HashMap<String,Integer> readPrivateKey(String email) {
 		File catalinaBase = new File(System.getProperty("catalina.home")).getAbsoluteFile();
         
-       
-    	
     	File file = new File(catalinaBase,"privateKeys/"+email+".txt");
     	Integer d = 0;
     	Integer n = 0;
@@ -117,8 +115,44 @@ public class NavigationServlet extends HttpServlet {
     	return publicKey;
     	
 	}
+	
+	private String validateSignature(String sender, String encryptedSignature, String body) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+		Integer e=0;
+		Integer n=0;
+		String publicKeyQuery = "SELECT e,n FROM [user]  WHERE email = ?";
+		
+		if(!encryptedSignature.isEmpty()) {
+			try (PreparedStatement result = conn.prepareStatement(publicKeyQuery)){
+				result.setString(1, sender);
+				ResultSet set = result.executeQuery();
+				while (set.next()) {
+					e = Integer.parseInt(set.getString(1));
+					n = Integer.parseInt(set.getString(2));
+				}
+			}catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+			
+			String[] cipherTextSig = encryptedSignature.split(",");
+			int[] cipherSig = new int[cipherTextSig.length];
+			for(int i =0; i<cipherTextSig.length; i++) {
+				cipherSig[i] = Integer.parseInt(cipherTextSig[i]);
+			}
 
-	private String getHtmlForInbox(String email, String pwd, String search_output ) {
+			String signatureHash = DigitalSignature.decrypt(cipherSig,e,n);
+			
+			String bodyHash = SendMailServlet.simpleHasher(body);
+			
+			if(signatureHash.equals(bodyHash))
+				return "Email has been validated";
+			else
+				return "Email failed validation";
+		}
+		else
+			return "No signature";
+	}
+
+	private String getHtmlForInbox(String email, String pwd, String search_output ) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 		String query="SELECT * FROM mail WHERE receiver =? AND subject LIKE ? ORDER BY [time] DESC";
 		try(PreparedStatement result = conn.prepareStatement(query)){
 			
@@ -129,7 +163,6 @@ public class NavigationServlet extends HttpServlet {
 				
 					+ "		<input type=\"submit\" name=\"inbox\" value=\"search\">\r\n"
 					+ "	</form>";
-			
 
 			if(search_output !=null)
 				search+= "<br><p style=\"font-weight:bold; text-decoration:underline; font-style:italic;\">you searched for: <span style=\"color:red;\">"+search_output+"</span></p>";
@@ -137,14 +170,12 @@ public class NavigationServlet extends HttpServlet {
 			if(search_output == null) 
 				search_output="";
 			
-			
 			result.setString(1, email);
 			result.setString(2, "%"+search_output+"%");
 			ResultSet res = result.executeQuery();
 			
 			StringBuilder output = new StringBuilder();
 			output.append("<div>\r\n");
-			
 			
 			HashMap<String,Integer> publicKey = readPrivateKey(email);
 			while (res.next()) {
@@ -154,15 +185,14 @@ public class NavigationServlet extends HttpServlet {
 					cipher[i] = Integer.parseInt(cipherText[i]);
 				}
 				
-				
 				String body = DigitalSignature.decrypt(cipher
 						,publicKey.get("private") 
 						,publicKey.get("n"));
 				output.append("<br><div style=\"white-space: pre-wrap;\"><span style=\"color:grey;\">");
-				output.append("FROM:&emsp;" + equalizer(res.getString(1)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(6)));
+				output.append("FROM:&emsp;" + equalizer(res.getString(1)) + "&emsp;&emsp;AT:&emsp;" + equalizer(res.getString(6) + "&emsp;&emsp;Signature:&emsp;" + equalizer(validateSignature(res.getString(1),res.getString(5),body))));
 				output.append("</span>");
 				output.append("<br><b>" + equalizer(res.getString(3)) + "</b>\r\n");
-				output.append("<br>" + equalizer(body));
+				output.append("<br>" + equalizer(body) + "\r\n");
 				output.append("</div></div>\r\n");
 				
 				output.append("<hr style=\"border-top: 2px solid black;\">\r\n");
@@ -174,11 +204,8 @@ public class NavigationServlet extends HttpServlet {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return "ERROR IN FETCHING INBOX MAILS!";
-		}
-		
-			
+		}	
 	}
-	
 	
 	private String getHtmlForNewMail(String email, String pwd) {
 		return 
@@ -194,8 +221,6 @@ public class NavigationServlet extends HttpServlet {
 			+ "	</form>\r\n"
 			+" </div>";
 	}
-	
-	
 	
 	private String getHtmlForSent(String email) {
 		String query = "SELECT * FROM mail WHERE sender = ? ORDER BY [time] DESC";
@@ -224,6 +249,5 @@ public class NavigationServlet extends HttpServlet {
 			e.printStackTrace();
 			return "ERROR IN FETCHING INBOX MAILS!";
 		}
-		
 	}
 }

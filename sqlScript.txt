@@ -1,20 +1,16 @@
 CREATE TABLE [user] (
-	name varchar(200)  NOT NULL,
-	surname varchar(200) NOT NULL,
-	email varchar(200) NOT NULL,
-	password varchar(200) NOT NULL,
-	salt varchar(200) NOT NULL,
-	e varchar(200) NOT NULL,
-	n varchar(200) NOT NULL,
+	name varchar(50)  NOT NULL,
+	surname varchar(50) NOT NULL,
+	email varchar(50) NOT NULL,
+	password varchar(50) NOT NULL,
 	CONSTRAINT user_PK PRIMARY KEY (email)
 );
 
 CREATE TABLE mail (
-	sender varchar(200) NOT NULL,
-	receiver varchar(200) NOT NULL,
-	subject varchar(200) NULL,
+	sender varchar(50) NOT NULL,
+	receiver varchar(50) NOT NULL,
+	subject varchar(100) NULL,
 	body text NOT NULL,
-	digitalSignature varchar(200) NULL,
 	[time] datetime2(3) NOT NULL,
 	CONSTRAINT mail_FK FOREIGN KEY (sender) REFERENCES [user](email),
 	CONSTRAINT mail_FK_1 FOREIGN KEY (receiver) REFERENCES [user](email)

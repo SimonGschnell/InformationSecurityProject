@@ -8,7 +8,8 @@
 	</classpathentry>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.module.container"/>
-	<classpathentry kind="lib" path="src/main/webapp/WEB-INF/lib/mssql-jdbc-10.2.0.jre11.jar"/>
-	<classpathentry kind="lib" path="C:/Users/39339/Desktop/apache-tomcat-10.0.21/lib/servlet-api.jar"/>
+	<classpathentry exported="true" kind="lib" path="E:/Users/Kevin/eclipse-workspace/ISO Project/src/main/webapp/WEB-INF/lib/mssql-jdbc-10.2.0.jre11.jar"/>
+	<classpathentry exported="true" kind="lib" path="E:/Users/Kevin/eclipse-workspace/ISO Project/src/main/webapp/WEB-INF/lib/servlet-api.jar"/>
+	<classpathentry kind="lib" path="E:/Program Files (x86)/apache-tomcat-10.0.13/lib/bcrypt-0.9.0.jar"/>
 	<classpathentry kind="output" path="build/classes"/>
 </classpath>
