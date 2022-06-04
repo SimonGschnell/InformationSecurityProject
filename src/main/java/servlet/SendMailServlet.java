@@ -3,7 +3,6 @@ package servlet;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
@@ -11,12 +10,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Properties;
-
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -41,7 +36,6 @@ public class SendMailServlet extends HttpServlet {
      */
     public SendMailServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
     
     public void init() throws ServletException {
@@ -53,8 +47,6 @@ public class SendMailServlet extends HttpServlet {
 		    connectionProps.put("password", PWD);
 	
 	        conn = DriverManager.getConnection(DB_URL, connectionProps);
-		    
-		    //System.out.println("User \"" + USER + "\" connected to database.");
     	
     	} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
@@ -64,9 +56,8 @@ public class SendMailServlet extends HttpServlet {
     private String equalizer(String stringToCheck) {
     	return stringToCheck.replaceAll("\\<.*?\\>", "");
     }
-    
 
-    private String simpleHasher(String inputString) throws NoSuchAlgorithmException, UnsupportedEncodingException {
+    public static String simpleHasher(String inputString) throws NoSuchAlgorithmException, UnsupportedEncodingException {
 		MessageDigest md = MessageDigest.getInstance("SHA-256");
 		byte[] input = inputString.getBytes();
 		byte[] bytes = md.digest(input);
@@ -76,7 +67,6 @@ public class SendMailServlet extends HttpServlet {
 		{
 			sb.append(String.format("%02x", bytes[i])); //transforms Hexadecimal to String
 		}
-		
 		return sb.toString();
 	}
    
@@ -103,9 +93,7 @@ public class SendMailServlet extends HttpServlet {
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
-		}
-		System.out.println(hashed_body);
-		
+		}	
 		
 		String query = "INSERT INTO mail ( sender, receiver, subject, body, digitalSignature, [time] ) VALUES (?, ?, ?, ?, ?, ?)";
 
@@ -130,7 +118,7 @@ public class SendMailServlet extends HttpServlet {
 				encriptedBody = encriptedBody.substring(0, encriptedBody.length()-1);
 				
 				if(hashed_body != null) {
-					int[] list2 = DigitalSignature.encrypt(hashed_body, NavigationServlet.readPrivateKey(sender).get("private"), n);
+					int[] list2 = DigitalSignature.encrypt(hashed_body, NavigationServlet.readPrivateKey(sender).get("private"), NavigationServlet.readPrivateKey(sender).get("n"));
 					for(int i : list2) {
 						encryptedSignature+=i+",";
 					}
@@ -157,9 +145,7 @@ public class SendMailServlet extends HttpServlet {
 			e2.printStackTrace();
 		}
 		
-		
 		request.setAttribute("email", sender);
 		request.getRequestDispatcher("home.jsp").forward(request, response);
 	}
-
 }

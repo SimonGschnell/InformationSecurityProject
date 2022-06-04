@@ -3,14 +3,12 @@ package servlet;
 import jakarta.servlet.http.HttpServlet;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Properties;
 
 import jakarta.servlet.ServletException;
@@ -47,8 +45,6 @@ public class LoginServlet extends HttpServlet {
 		    connectionProps.put("password", PWD);
 	
 	        conn = DriverManager.getConnection(DB_URL, connectionProps);
-		    
-		    //System.out.println("User \"" + USER + "\" connected to database.");
     	
     	} catch (ClassNotFoundException | SQLException e) {
 			e.printStackTrace();
@@ -75,7 +71,6 @@ public class LoginServlet extends HttpServlet {
 		}catch(SQLException e) {
 			e.printStackTrace();
 			request.getRequestDispatcher("login.html").forward(request, response);
-			
 		}
 		
 		if(! resSalt.equals("")) {
@@ -86,9 +81,7 @@ public class LoginServlet extends HttpServlet {
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
-			
 		}
-
 		
 		String query = "SELECT * FROM [user] WHERE email = ? AND password= ?";
 		try (PreparedStatement result = conn.prepareStatement(query)){
@@ -113,9 +106,6 @@ public class LoginServlet extends HttpServlet {
 		} catch (SQLException e) {
 			e.printStackTrace();
 			request.getRequestDispatcher("login.html").forward(request, response);
-			
 		}
-		
-		
 	}
 }
