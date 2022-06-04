@@ -104,27 +104,28 @@ public class DigitalSignature {
         }
         
         public static int[] encrypt(String plaintext, int e, int n){
-        	
+
             int[] crypt = new int[plaintext.length()];
             String[] text =plaintext.split("");
-            
+           
             for (int i=0;i<text.length;i++){
                 int number = (int)text[i].charAt(0);
                 
-                
-                crypt[i]=((int)Math.pow(number, e) % n) ;
+                crypt[i]=BigDecimal.valueOf(number).toBigInteger().pow(e).mod(BigDecimal.valueOf(n).toBigInteger()).intValue();
+                //((int)Math.pow(number, e) % n) ;
                 
             }
             // plaintext -> each character is converted into a number given by the position of the character in the alphabet
 
             //for each number from the plaintext compute  ( pow(number, e) ) mod n
 
+            System.out.println("This is the encrypted list: " +Arrays.toString(crypt));
             
             return crypt;
         }
 
         public static String decrypt(int[] ciphertext, int d, int n){
-        	
+
         	int[] res = new int[ciphertext.length];
         	
             for(int i =0; i<ciphertext.length; i++){

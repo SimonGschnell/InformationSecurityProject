@@ -91,7 +91,7 @@ public class NavigationServlet extends HttpServlet {
 		request.getRequestDispatcher("home.jsp").forward(request, response);
 	}
 	
-	private HashMap<String,Integer> readPrivateKey(String email) {
+	static public HashMap<String,Integer> readPrivateKey(String email) {
 		File catalinaBase = new File(System.getProperty("catalina.home")).getAbsoluteFile();
         
        
@@ -179,18 +179,6 @@ public class NavigationServlet extends HttpServlet {
 			
 	}
 	
-	/*		"<div class = \"flex-container\">"
-				+"<form id=\"submitForm\" class=\"form-resize\" action=\"SendMailServlet\" method=\"post\">\r\n"
-			+ "		<input type=\"hidden\" name=\"email\" value=\""+email+"\">\r\n"
-			+ "		<input type=\"hidden\" name=\"password\" value=\""+pwd+"\">\r\n"
-			+ "		<input class=\"single-row-input\" type=\"email\" name=\"receiver\" placeholder=\"Receiver\" required>\r\n"
-			+ "		<input class=\"single-row-input\" type=\"text\"  name=\"subject\" placeholder=\"Subject\" required>\r\n"
-			+ "		<textarea class=\"textarea-input\" name=\"body\" placeholder=\"Body\" wrap=\"hard\" required></textarea>\r\n"
-			+ "		<input type=\"submit\" name=\"sent\" value=\"Send\">\r\n"
-			+ "	</form>\r\n"
-			+ "<input type=\"checkbox\" id=\"accept\" name=\"Digital_Signature\" value=\"yes\"> Digital Signature"
-			+" </div>";
-	 */
 	
 	private String getHtmlForNewMail(String email, String pwd) {
 		return 
@@ -202,10 +190,8 @@ public class NavigationServlet extends HttpServlet {
 			+ "		<input class=\"single-row-input\" type=\"text\"  name=\"subject\" placeholder=\"Subject\" required>\r\n"
 			+ "		<textarea class=\"textarea-input\" name=\"body\" placeholder=\"Body\" wrap=\"hard\" required></textarea>\r\n"
 			+ "		<input type=\"submit\" name=\"sent\" value=\"Send\">\r\n"
+			+ "<input type=\"checkbox\" id=\"digital\" name=\"digital\" value=\"true\" > Digital Signature"
 			+ "	</form>\r\n"
-			+ "<div>"
-			+ "<input class = \" signature-button\" type=\"checkbox\" id=\"Digital\" name=\"Digital\" value=\"true\" > Digital Signature"
-			+ "</div>"
 			+" </div>";
 	}
 	
