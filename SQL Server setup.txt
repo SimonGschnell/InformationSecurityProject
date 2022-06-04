@@ -1,0 +1,17 @@
+1) Download SQL Server (I used this, but you can use whichever you want)
+   | FOR WINDOWS
+   | You can download the developer version at "https://www.microsoft.com/it-it/sql-server/sql-server-downloads" (scroll down a bit to find it)
+   | Then follow the installer instructions
+   |
+   | FOR MACOS AND LINUX
+   | You have to make it work through Docker
+   | Please follow this guide "https://phoenixnap.com/kb/install-sql-server-macos" until the Step 3
+2) Download DBeaver (Windows has even an app in the Marketplace)
+3) In DBeaver create a connection to SQL Server DB
+   Go to Database -> New Database Connection -> Search for 'SQL Server' -> Insert a username and password -> Click Finish
+4) Under 'master', create a new DB by right-clicking on 'Databases' (I called it 'examDB')
+5) Let's create the DB tables used in the exam project
+   Right click on the newly created DB -> SQL Editor -> New SQL Script
+   Copy-Paste the SQL script in sqlScript.txt file -> Right click on the editor -> Execute -> Execute SQL Script
+
+--- Now you are ready to populate databases and/or run the Java web application ---

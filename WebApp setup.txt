@@ -1,0 +1,41 @@
+--- Environment setup ---
+
+1) Install Java JDK 11 (that's the one used by me)
+2) Install Eclipse latest version (currently 2021-12)
+3.1) Go to Help -> Install new software... -> Work with: "Latest Eclipse Simultaneous Release - https://download.eclipse.org/releases/latest"
+3.2) In the tab below, expand the "Web, XML, Java EE and OSGi Enterprise Development" checkbox
+3.3) Check the following elements:
+	- Eclipse Java EE Developer Tools
+	- Eclipse Java Web Developer Tools
+	- Eclipse Java Web Developer Tools - JavaScript Support
+	- Eclipse Web Developer Tools
+	- Eclipse Web JavaScript Developer Tools
+	- JST Server Adapters
+	- JST Server Adapters Extension (Apache Tomcat)
+3.4) Click Next two times, then accept the licence and click Finish
+4) Restart Eclipse
+5) Go to Window -> Preferences -> Server -> Runtime Environments -> Add... -> Apache -> Apache Tomcat v10.0 -> Thick 'Create new a local server' -> Next
+6) Click 'Download and install...', that should install the latest stable version (currently 10.0.13) -> Choose your favourite folder for Tomcat installation
+7) Since now you can see your installed web servers in the Eclipse 'Server' tab, if it is not displayed by default, you can enable it by going to Window -> Show view -> Server
+
+--- Project setup ---
+
+IF YOU WANT TO CREATE A NEW PROJECT
+1) Go to File -> New -> Project... -> Web -> Dynamic Web Application
+2) Name your project as you want (e.g. ExamProject) -> click Next two times -> Thick 'Generate web.xml deployment descriptor' -> click Finish
+3) Right click on the newly created project -> Build path -> Configure build path...
+4) Go to Libraries -> Click on classpath -> Add External Jars... -> Add the file "servlet-api.jar" from lib directory inside the Apache Tomcat folder
+
+IF YOU WANT TO IMPORT IT FROM GITHUB
+1) Download the project from GitHub link "https://github.com/francxx96/ExamProject"
+2) Import it with Eclipse
+3) Right click on the project -> Build path -> Configure build path...
+4) Go to Libraries -> Click on classpath -> Add External Jars... -> Add the file "servlet-api.jar" from lib directory inside the Apache Tomcat folder
+
+--- You're ready now to build your Web Application using Java and Tomcat! ---
+
+By using Eclipse you can...
+1) create Servlets: right click on project -> New -> Servlet
+	(note that Eclipse auto-generated servlets import the old 'javax' package still, replace it with 'jakarta' to work properly)
+2) create HTTP/JSP/CSS/JavaScript files: right click on project -> New -> HTTP/JSP/CSS/JavaScript file
+3) run your web application: right click on project -> Run As -> Run on Server -> Select the Apache Tomcat server -> Run -> Go to your browser on URL "http://localhost:8080/ExamProject/"

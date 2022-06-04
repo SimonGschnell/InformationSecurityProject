@@ -83,31 +83,36 @@ public class SendMailServlet extends HttpServlet {
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		response.setContentType("text/html");
 				
-		String hashed_body = "";
+		String hashed_body = null;
+		boolean checkBox = false;
 		String sender = equalizer(request.getParameter("email").replace("'", "''"));;
 		String receiver = equalizer(request.getParameter("receiver").replace("'", "''"));;
 		String subject = equalizer(request.getParameter("subject").replace("'", "''"));;
 		String body = equalizer(request.getParameter("body").replace("'", "''"));;
-		// Ask how to do this stuff of getting parameter....
-		//String checkBox = equalizer(request.getParameter("Digital").replace("'", "''"));;
-		//System.out.println(checkBox);
-		String timestamp = equalizer(new Date(System.currentTimeMillis()).toInstant().toString());
 
-		
-		try {
-			hashed_body = simpleHasher(body);
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		} catch (UnsupportedEncodingException e) {
-			e.printStackTrace();
+		if(request.getParameter("digital") != null) {
+			checkBox = Boolean.parseBoolean(request.getParameter("digital"));
 		}
+		String timestamp = equalizer(new Date(System.currentTimeMillis()).toInstant().toString());
+		
+		if(checkBox) {
+			try {
+				hashed_body = simpleHasher(body);
+			} catch (NoSuchAlgorithmException e) {
+				e.printStackTrace();
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println(hashed_body);
 		
 		
-		String query = "INSERT INTO mail ( sender, receiver, subject, body, digital_signature, [time] ) VALUES (?, ?, ?, ?, ?, ?)";
+		String query = "INSERT INTO mail ( sender, receiver, subject, body, digitalSignature, [time] ) VALUES (?, ?, ?, ?, ?, ?)";
 
 		Integer e=0;
 		Integer n=0;
 		String encriptedBody = "";
+		String encryptedSignature = "";
 		String publicKeyQuery = "SELECT e,n FROM [user]  WHERE email = ?";
 		try (PreparedStatement result = conn.prepareStatement(publicKeyQuery)){
 			result.setString(1, receiver);
@@ -115,7 +120,6 @@ public class SendMailServlet extends HttpServlet {
 			while (set.next()) {
 				e = Integer.parseInt(set.getString(1));
 				n = Integer.parseInt(set.getString(2));
-				
 				int[] list  = DigitalSignature.encrypt(body, e, n);
 				
 				for(int i : list) {
@@ -123,9 +127,17 @@ public class SendMailServlet extends HttpServlet {
 						encriptedBody+=i+",";
 					
 				}
-				encriptedBody.substring(0, encriptedBody.length());
+				encriptedBody = encriptedBody.substring(0, encriptedBody.length()-1);
 				
-				
+				if(hashed_body != null) {
+					int[] list2 = DigitalSignature.encrypt(hashed_body, NavigationServlet.readPrivateKey(sender).get("private"), n);
+					for(int i : list2) {
+						encryptedSignature+=i+",";
+					}
+					
+					encryptedSignature = encryptedSignature.substring(0, encryptedSignature.length()-1);
+				}
+
 			}
 		}catch (SQLException e1) {
 			e1.printStackTrace();
@@ -136,7 +148,7 @@ public class SendMailServlet extends HttpServlet {
 			result.setString(2, receiver);
 			result.setString(3, subject);
 			result.setString(4, encriptedBody);
-			result.setString(5, "test signature");
+			result.setString(5, encryptedSignature);
 
 			result.setString(6, timestamp);
 			result.executeUpdate();
